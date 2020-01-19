@@ -3,6 +3,9 @@ import cv2
 # from sklearn.externals import joblib
 import joblib
 import argparse
+import math
+import os
+import sys
 # from time import gmtime, strftime
 
 
@@ -22,30 +25,30 @@ def calc_hist(img):
     return np.array(histogram)
 
 
-ap = argparse.ArgumentParser()
-ap.add_argument("-n", "--name", required=True, help="name of trained model to perform spoofing detection")
-ap.add_argument("-d", "--device", required=True, help="camera identifier/video to acquire the image")
-ap.add_argument("-t", "--threshold", required=False, help="threshold used for the classifier to decide between genuine and a spoof attack")
-args = vars(ap.parse_args())
+# ap = argparse.ArgumentParser()
+# ap.add_argument("-n", "--name", required=True, help="name of trained model to perform spoofing detection")
+# ap.add_argument("-d", "--device", required=True, help="camera identifier/video to acquire the image")
+# ap.add_argument("-t", "--threshold", required=False, help="threshold used for the classifier to decide between genuine and a spoof attack")
+# args = vars(ap.parse_args())
 
 if __name__ == "__main__":
 
     # # Load model
     clf = None
     try:
-        clf = joblib.load(args["name"])
+        clf = joblib.load("replay-attack_ycrcb_luv_extraTreesClassifier.pkl")
     except IOError as e:
-        print ("Error loading model <"+args["name"]+">: {0}".format(e.strerror))
+        print ("Error loading model <"+"replay-attack_ycrcb_luv_extraTreesClassifier.pkl"+">: {0}".format(e.strerror))
         exit(0)
 
     # # Open the camera
-    if '.' in args["device"]:
-        cap = cv2.VideoCapture(args["device"])
-    else:
-        cap = cv2.VideoCapture(int(args["device"]))
-    if not cap.isOpened():
-        print ("Error opening camera")
-        exit(0)
+    # if '.' in args["device"]:
+    #     cap = cv2.VideoCapture(args["device"])
+    # else:
+    cap = cv2.VideoCapture(int(0))
+    # if not cap.isOpened():
+    #     print ("Error opening camera")
+    #     exit(0)
 
     width = 320
     height = 240
@@ -78,7 +81,17 @@ if __name__ == "__main__":
 
             roi = img_bgr[y:y+h, x:x+w]
 
-            img_ycrcb = cv2.cvtColor(roi, cv2.COLOR_BGR2YCR_CB)
+            img_rgb1 = cv2.cvtColor(roi, cv2.COLOR_BGR2RGB)
+            rowSize, columnSize, planes = img_rgb1.shape
+            img_ycrcb = img_rgb1.copy(order = 'F')
+
+            for row in range(0, rowSize):
+               for column in range(0, columnSize):
+                   img_ycrcb[row, column, 0] = math.trunc(img_rgb1[row][column][0] + img_rgb1[row][column][1] + img_rgb1[row][column][2])
+                   img_ycrcb[row, column, 1] = img_rgb1[row][column][1] + img_rgb1[row][column][2] - (2*img_rgb1[row][column][0])
+                   img_ycrcb[row, column, 2] = img_rgb1[row][column][2] - img_rgb1[row][column][1]
+            # img_ycrcb = cv2.cvtColor(roi, cv2.COLOR_BGR2YCR_CB)
+            # print(type(img_ycrcb))
             img_luv = cv2.cvtColor(roi, cv2.COLOR_BGR2LUV)
 
             ycrcb_hist = calc_hist(img_ycrcb)
