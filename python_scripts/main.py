@@ -2,10 +2,7 @@ import numpy as np
 import cv2
 # from sklearn.externals import joblib
 import joblib
-import argparse
-import math
-import os
-import sys
+np.seterr(over='ignore')
 # from time import gmtime, strftime
 
 
@@ -81,18 +78,18 @@ if __name__ == "__main__":
 
             roi = img_bgr[y:y+h, x:x+w]
 
+            img_ycrcb = cv2.cvtColor(roi, cv2.COLOR_BGR2YCR_CB)
+            # print(type(img_ycrcb))
+            # img_luv = cv2.cvtColor(roi, cv2.COLOR_BGR2LUV)
             img_rgb1 = cv2.cvtColor(roi, cv2.COLOR_BGR2RGB)
             rowSize, columnSize, planes = img_rgb1.shape
-            img_ycrcb = img_rgb1.copy(order = 'F')
+            img_luv = img_rgb1.copy(order = 'F')
 
             for row in range(0, rowSize):
                for column in range(0, columnSize):
-                   img_ycrcb[row, column, 0] = math.trunc(img_rgb1[row][column][0] + img_rgb1[row][column][1] + img_rgb1[row][column][2])
-                   img_ycrcb[row, column, 1] = img_rgb1[row][column][1] + img_rgb1[row][column][2] - (2*img_rgb1[row][column][0])
-                   img_ycrcb[row, column, 2] = img_rgb1[row][column][2] - img_rgb1[row][column][1]
-            # img_ycrcb = cv2.cvtColor(roi, cv2.COLOR_BGR2YCR_CB)
-            # print(type(img_ycrcb))
-            img_luv = cv2.cvtColor(roi, cv2.COLOR_BGR2LUV)
+                   img_luv[row, column, 0] = img_rgb1[row][column][0] + img_rgb1[row][column][1] + img_rgb1[row][column][2]
+                   img_luv[row, column, 1] = img_rgb1[row][column][1] + img_rgb1[row][column][2] - (2*img_rgb1[row][column][0])
+                   img_luv[row, column, 2] = img_rgb1[row][column][2] - img_rgb1[row][column][1]
 
             ycrcb_hist = calc_hist(img_ycrcb)
             luv_hist = calc_hist(img_luv)
