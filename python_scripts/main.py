@@ -61,6 +61,7 @@ if __name__ == "__main__":
     count = 0
     measures = np.zeros(sample_number, dtype=np.float)
 
+
     while True:
         ret, img_bgr = cap.read()
         if ret is False:
@@ -88,8 +89,8 @@ if __name__ == "__main__":
             for row in range(0, rowSize):
                for column in range(0, columnSize):
                    img_luv[row, column, 0] = img_rgb1[row][column][0] + img_rgb1[row][column][1] + img_rgb1[row][column][2]
-                   img_luv[row, column, 1] = img_rgb1[row][column][1] + img_rgb1[row][column][2] - (2*img_rgb1[row][column][0])
-                   img_luv[row, column, 2] = img_rgb1[row][column][2] - img_rgb1[row][column][1]
+                   img_luv[row, column, 1] = img_rgb1[row][column][1] + img_rgb1[row][column][2] - (2*img_rgb1[row][column][0]) + 510
+                   img_luv[row, column, 2] = img_rgb1[row][column][2] - img_rgb1[row][column][1] + 255
 
             ycrcb_hist = calc_hist(img_ycrcb)
             luv_hist = calc_hist(img_luv)
