@@ -15,7 +15,7 @@ def detect_face(img, faceCascade):
 def calc_hist(img):
     histogram = [0] * 3
     for j in range(3):
-        histr = cv2.calcHist([img], [j], None, [256], [0, 256])
+        histr = cv2.calcHist([img], channels=[j], mask=None, histSize=[256], ranges=[0, 256])
         histr *= 255.0 / histr.max()
         histogram[j] = histr
     return np.array(histogram)
